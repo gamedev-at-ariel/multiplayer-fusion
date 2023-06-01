@@ -314,7 +314,7 @@ MonoBehaviour:
     m_SingletonActionBindings:
     - m_Name: 
       m_Id: ee8f004a-b3a9-49d1-802a-9ce4b4948391
-      m_Path: <Keyboard>/E
+      m_Path: <Keyboard>/c
       m_Interactions: 
       m_Processors: 
       m_Groups: 
