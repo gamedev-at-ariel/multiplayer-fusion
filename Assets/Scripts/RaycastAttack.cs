@@ -27,10 +27,18 @@ public class RaycastAttack : NetworkBehaviour {
     }
 
 
-    void Update() {
+    private bool _attackPressed;
+    void Update() {  // We have to read the button status in Update, because FixedNetworkUpdate might miss it.
+        if (!HasStateAuthority) return;
+        if (attack.WasPerformedThisFrame()) {
+            _attackPressed = true;
+        }
+    }
+
+    public override void FixedUpdateNetwork() {
         if (!HasStateAuthority)  return;
 
-        if (attack.WasPerformedThisFrame()) {
+        if (_attackPressed) {
             Vector2 attackLocationInScreenCoordinates = attackLocation.ReadValue<Vector2>();
 
             var camera = Camera.main;
@@ -47,6 +55,7 @@ public class RaycastAttack : NetworkBehaviour {
                     health.DealDamageRpc(Damage);
                 }
             }
+            _attackPressed = false;
         }
     }
 

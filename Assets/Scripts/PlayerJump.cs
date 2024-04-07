@@ -37,6 +37,7 @@ public class PlayerJump: NetworkBehaviour {
 
     private bool _jumpPressed;
     void Update() {  // We have to read the button status in Update, because FixedNetworkUpdate might miss it.
+        if (!HasStateAuthority) return;
         if (jumpAction.WasPressedThisFrame()) {
             _jumpPressed = true;
         }
@@ -49,9 +50,7 @@ public class PlayerJump: NetworkBehaviour {
 
     private Vector3 velocity = new Vector3(0, 0, 0);
     public override void FixedUpdateNetwork() {
-        if (!HasStateAuthority) {
-            return;
-        }
+        if (!HasStateAuthority) return;
         if (_controller.isGrounded) {
             velocity = new Vector3(0, -1, 0);
         } else {
@@ -59,6 +58,7 @@ public class PlayerJump: NetworkBehaviour {
         }
         if (_jumpPressed && _controller.isGrounded) {
             velocity.y += JumpVelocity;
+            _jumpPressed = false;
         }
 
         Vector3 movement = moveAction.ReadValue<Vector2>();
@@ -66,7 +66,6 @@ public class PlayerJump: NetworkBehaviour {
         velocity.z = movement.y * speed;
 
         _controller.Move(velocity*Runner.DeltaTime);
-        _jumpPressed = false;
     }
 }
 

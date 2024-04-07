@@ -24,7 +24,7 @@ public class PlayerMovement : NetworkBehaviour {
 
 
     private CharacterController _controller;
-    public override void Spawned() {
+    public override void Spawned() {   // replace "Start" or "Awake"
         _controller = GetComponent<CharacterController>();
     }
 
