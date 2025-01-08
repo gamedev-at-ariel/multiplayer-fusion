@@ -17,11 +17,28 @@ public class PlayerColor : NetworkBehaviour {
             colorAction.AddBinding("<Keyboard>/C");
     }
 
-    [Networked(OnChanged = nameof(NetworkColorChanged))]
+
+    [Networked]
     public Color NetworkedColor { get; set; }
-    private static void NetworkColorChanged(Changed<PlayerColor> changed) {
-        changed.Behaviour.meshRendererToChange.material.color = changed.Behaviour.NetworkedColor;
+
+    private ChangeDetector _changes;
+
+    public override void Spawned() {
+        _changes = GetChangeDetector(ChangeDetector.Source.SimulationState);
     }
+
+    public override void Render() {
+        foreach (var change in _changes.DetectChanges(this, out var previousBuffer, out var currentBuffer)) {
+            switch (change) {
+                case nameof(NetworkedColor):
+                    var reader = GetPropertyReader<Color>(nameof(NetworkedColor));
+                    var (previous, current) = reader.Read(previousBuffer, currentBuffer);
+                    meshRendererToChange.material.color = current;
+                    break;
+            }
+        }
+    }
+
 
     void Update() {
         if (!HasStateAuthority) return;

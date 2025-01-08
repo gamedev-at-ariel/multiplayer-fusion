@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 29ad2a3b33d1456448f45ff5327da0a7
+labels:
+- FusionDefaultGlobal
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}

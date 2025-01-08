@@ -5,12 +5,32 @@ public class Health : NetworkBehaviour
 {
     [SerializeField] NumberField HealthDisplay;
     
-    [Networked(OnChanged = nameof(NetworkedHealthChanged))]
+    [Networked]
     public int NetworkedHealth { get; set; } = 100;
-    private static void NetworkedHealthChanged(Changed<Health> changed) {
+
+    // Migration from Fusion 1:  https://doc.photonengine.com/fusion/current/getting-started/migration/coming-from-fusion-v1
+    private ChangeDetector _changes;
+
+    public override void Spawned() {
+        _changes = GetChangeDetector(ChangeDetector.Source.SimulationState);
+    }
+
+    public override void Render() {
+        foreach (var change in _changes.DetectChanges(this, out var previousBuffer, out var currentBuffer)) {
+            switch (change) {
+                case nameof(NetworkedHealth):
+                    var reader = GetPropertyReader<int>(nameof(NetworkedHealth));
+                    var (previous, current) = reader.Read(previousBuffer, currentBuffer);
+                    NetworkedHealthChanged(previous, current);
+                    break;
+            }
+        }
+    }
+
+    private void NetworkedHealthChanged(int previous, int current) {
         // Here you would add code to update the player's healthbar.
-        Debug.Log($"Health of {changed.Behaviour.name} changed to: {changed.Behaviour.NetworkedHealth}");
-        changed.Behaviour.HealthDisplay.SetNumber(changed.Behaviour.NetworkedHealth);
+        Debug.Log($"Health of {name} changed from {previous} to {current}");
+        HealthDisplay.SetNumber(current);
     }
 
     [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
